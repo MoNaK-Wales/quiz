@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load crispy_forms_filters %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: 75vh;">
+  <div class="card shadow-lg rounded-4 p-4" style="max-width: 420px; width: 100%;">
+    <h2 class="text-primary fw-bold mb-4 text-center">Register</h2>
+
+    <form method="POST" action="{% url 'auth:register' %}">
+      {% csrf_token %}
+      {{ form | crispy }}
+
+      <button type="submit" class="btn btn-primary w-100 py-2 mt-3 fw-semibold shadow-sm" style="font-size: 1.1rem;">
+        Register
+      </button>
+    </form>
+
+    <div class="mt-4 text-center text-muted" style="font-size: 0.9rem;">
+      Already have an account? 
+      <a href="{% url 'auth:login' %}" class="text-primary fw-semibold text-decoration-none">Log In</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

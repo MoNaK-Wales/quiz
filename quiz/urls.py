@@ -1,5 +1,5 @@
 from django.urls import path
-import views
+from quiz.views import *
 
 
 app_name = 'quiz'

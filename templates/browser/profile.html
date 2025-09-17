@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}profile{% endblock title %}
+
+{% block content %}
+    <h1 class="mb-4">User Profile</h1>
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    {% if user.is_staff %}
+        <p><strong>Administrator</strong></p>
+    {% endif %}
+{% endblock content %}  
