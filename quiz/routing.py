@@ -4,6 +4,6 @@ from quiz.consumers import QuizConsumer
 
 # Типа urls.py, но для вебсокетов, ссылка используется в джаваскрипте (передаётся в config/asgi.py)
 websocket_urlpatterns = [
-    re_path(r"^ws/quiz/(?P<quiz_id>\w+)/$", QuizConsumer.as_asgi()),
+    re_path(r"^ws/quiz/(?P<room_code>\w+)/$", QuizConsumer.as_asgi()),
     re_path(r"^ws/test/$", QuizConsumer.as_asgi()),
 ]

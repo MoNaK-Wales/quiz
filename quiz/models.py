@@ -38,6 +38,7 @@ class Answer(models.Model):
 class QuizSession(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='sessions')
     code = models.CharField(max_length=6, unique=True)
+    current_question_index = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 

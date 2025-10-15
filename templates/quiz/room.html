@@ -2,38 +2,52 @@
 {% block title %}{{ quiz.title }}{% endblock %}
 
 {% block content %}
-    <h2>{{ quiz.title }}</h2>
-    <div id="messages"></div>
+    <h2>Welcome, {{ player_name }}!</h2>
+    <div id="quiz-container">
+        <h3 id="question-text">Waiting for the host to start the game...</h3>
+    </div>
+
+    <div id="answers-container" style="display: none;">
+        <button id="btn-a" onclick="sendAnswer('A')">A</button>
+        <button id="btn-b" onclick="sendAnswer('B')">B</button>
+        <button id="btn-c" onclick="sendAnswer('C')">C</button>
+        <button id="btn-d" onclick="sendAnswer('D')">D</button>
+    </div>
 
     <script>
         const roomCode = "{{ session.code }}";
-        const playerName = "{{ player_name }}"; // Получаем имя из вьюшки
+        const playerName = "{{ player_name }}";
         const socket = new WebSocket(`ws://${window.location.host}/ws/quiz/${roomCode}/`);
 
+        const questionText = document.getElementById('question-text');
+        const btnA = document.getElementById('btn-a');
+        const btnB = document.getElementById('btn-b');
+        const btnC = document.getElementById('btn-c');
+        const btnD = document.getElementById('btn-d');
+
         socket.onopen = () => {
-            console.log("✅ Connected!");
-            socket.send(JSON.stringify({
-                'type': 'join',
-                'name': playerName
-            }));
+            console.log("✅ Connected to game room!");
+            socket.send(JSON.stringify({'type': 'join', 'name': playerName}));
         };
 
         socket.onmessage = (e) => {
-            let data = JSON.parse(e.data);
-            console.log("Gotten:", data.message);
-            // Тут логика отображения вопросов
+            const data = JSON.parse(e.data);
+            console.log("Message from server:", data);
+
+            if (data.type === 'new_question') {
+                questionText.textContent = data.question;
+                btnA.textContent = data.answers.A;
+                btnB.textContent = data.answers.B;
+                btnC.textContent = data.answers.C;
+                btnD.textContent = data.answers.D;
+
+                document.getElementById('answers-container').style.display = 'block';
+            }
         };
 
         function sendAnswer(answer) {
-            socket.send(JSON.stringify({
-                'type': 'answer',
-                'answer': answer
-            }));
+            console.log(`Sending answer: ${answer}`);
+            socket.send(JSON.stringify({'type': 'answer', 'answer': answer}));
         }
     </script>
-
-    <button onclick="sendAnswer('A')">A</button>
-    <button onclick="sendAnswer('B')">B</button>
-    <button onclick="sendAnswer('C')">C</button>
-    <button onclick="sendAnswer('D')">D</button>
 {% endblock %}

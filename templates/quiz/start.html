@@ -26,5 +26,14 @@
                 });
             }
         };
+
+        const startButton = document.getElementById('start-quiz-btn');
+        startButton.addEventListener('click', () => {
+            socket.send(JSON.stringify({
+                'type': 'start_quiz'
+            }));
+            startButton.disabled = true;
+            startButton.textContent = 'Quiz in progress...';
+        });
     </script>
 {% endblock %}
