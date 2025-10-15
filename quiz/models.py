@@ -1,4 +1,6 @@
 from django.db import models
+import random
+import string
 
 # Create your models here.
 class Quiz(models.Model):
@@ -32,3 +34,14 @@ class Answer(models.Model):
     def __str__(self):
         return self.text
     
+
+class QuizSession(models.Model):
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='sessions')
+    code = models.CharField(max_length=6, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        super().save(*args, **kwargs)

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz.title }}{% endblock %}
+
+{% block content %}
+    <h2>{{ quiz.title }}</h2>
+    <div id="messages"></div>
+
+    <script>
+        const roomCode = "{{ session.code }}";
+        const playerName = "{{ player_name }}"; // Получаем имя из вьюшки
+        const socket = new WebSocket(`ws://${window.location.host}/ws/quiz/${roomCode}/`);
+
+        socket.onopen = () => {
+            console.log("✅ Connected!");
+            socket.send(JSON.stringify({
+                'type': 'join',
+                'name': playerName
+            }));
+        };
+
+        socket.onmessage = (e) => {
+            let data = JSON.parse(e.data);
+            console.log("Gotten:", data.message);
+            // Тут логика отображения вопросов
+        };
+
+        function sendAnswer(answer) {
+            socket.send(JSON.stringify({
+                'type': 'answer',
+                'answer': answer
+            }));
+        }
+    </script>
+
+    <button onclick="sendAnswer('A')">A</button>
+    <button onclick="sendAnswer('B')">B</button>
+    <button onclick="sendAnswer('C')">C</button>
+    <button onclick="sendAnswer('D')">D</button>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz.title }}{% endblock %}
+
+{% block content %}
+    <h2>{{ quiz.title }}</h2>
+    <p>Code for players: <strong>{{ session.code }}</strong></p>
+
+    <button id="start-quiz-btn">Start quiz!</button>
+
+    <h3>Players joined:</h3>
+    <ul id="players-list"></ul>
+
+    <script>
+        const roomCode = "{{ session.code }}";
+        const playersList = document.getElementById("players-list");
+        const socket = new WebSocket(`ws://${window.location.host}/ws/quiz/${roomCode}/`);
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.type === "players_update") {
+                playersList.innerHTML = ''; 
+                data.players.forEach(name => {
+                    const li = document.createElement('li');
+                    li.textContent = name;
+                    playersList.appendChild(li);
+                });
+            }
+        };
+    </script>
+{% endblock %}
