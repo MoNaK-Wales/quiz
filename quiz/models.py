@@ -13,7 +13,7 @@ class Quiz(models.Model):
 
     def __str__(self):
         return self.title
-    
+
 
 class Question(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
@@ -30,10 +30,13 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     text = models.CharField(max_length=200)
     is_correct = models.BooleanField(default=False)
+    option_char = models.CharField(
+        max_length=1, choices=[("A", "A"), ("B", "B"), ("C", "C"), ("D", "D")]
+    )
 
     def __str__(self):
-        return self.text
-    
+        return f"({self.option_char}) {self.text}"
+
 
 class QuizSession(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='sessions')

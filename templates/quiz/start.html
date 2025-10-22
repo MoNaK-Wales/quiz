@@ -2,38 +2,77 @@
 {% block title %}{{ quiz.title }}{% endblock %}
 
 {% block content %}
-    <h2>{{ quiz.title }}</h2>
-    <p>Code for players: <strong>{{ session.code }}</strong></p>
+    <div id="lobby-container">
+        <h2>{{ quiz.title }}</h2>
+        <p>PIN for players: <strong>{{ session.code }}</strong></p>
+        <button id="start-quiz-btn">Start Quiz!</button>
+        <h3>Players Joined (<span id="player-count">0</span>):</h3>
+        <ul id="players-list"></ul>
+    </div>
 
-    <button id="start-quiz-btn">Start quiz!</button>
-
-    <h3>Players joined:</h3>
-    <ul id="players-list"></ul>
+    <div id="question-container" style="display: none;">
+        <h2 id="question-text"></h2>
+        <div id="host-answers-container" style="margin-top: 20px;">
+            <div id="host-answer-a" style="background-color: red; padding: 10px; margin: 5px; color: white;"></div>
+            <div id="host-answer-b" style="background-color: blue; padding: 10px; margin: 5px; color: white;"></div>
+            <div id="host-answer-c" style="background-color: orange; padding: 10px; margin: 5px; color: white;"></div>
+            <div id="host-answer-d" style="background-color: green; padding: 10px; margin: 5px; color: white;"></div>
+        </div>
+    </div>
 
     <script>
         const roomCode = "{{ session.code }}";
-        const playersList = document.getElementById("players-list");
         const socket = new WebSocket(`ws://${window.location.host}/ws/quiz/${roomCode}/`);
+
+        const lobbyContainer = document.getElementById('lobby-container');
+        const questionContainer = document.getElementById('question-container');
+        const playersList = document.getElementById('players-list');
+        const playerCount = document.getElementById('player-count');
+        const questionText = document.getElementById('question-text');
+        const startButton = document.getElementById('start-quiz-btn');
+
+        const hostAnswerA = document.getElementById('host-answer-a');
+        const hostAnswerB = document.getElementById('host-answer-b');
+        const hostAnswerC = document.getElementById('host-answer-c');
+        const hostAnswerD = document.getElementById('host-answer-d');
 
         socket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            if (data.type === "players_update") {
+            console.log("Host received:", data);
+
+            if (data.type === 'players_update') {
                 playersList.innerHTML = ''; 
                 data.players.forEach(name => {
                     const li = document.createElement('li');
                     li.textContent = name;
                     playersList.appendChild(li);
                 });
+                playerCount.textContent = data.players.length;
+            }
+            else if (data.type === 'new_question') {
+                lobbyContainer.style.display = 'none';
+                
+                questionText.textContent = data.question;
+                hostAnswerA.textContent = `${data.answers.A}`;
+                hostAnswerB.textContent = `${data.answers.B}`;
+                hostAnswerC.textContent = `${data.answers.C}`;
+                hostAnswerD.textContent = `${data.answers.D}`;
+                questionContainer.style.display = 'block';
+                document.getElementById('host-answers-container').style.display = 'block';
+            }
+            else if (data.type === 'round_results') {
+                questionText.textContent = 'Get ready for the next question...';
+                document.getElementById('host-answers-container').style.display = 'none';
+            }
+            else if (data.type === 'quiz_end') {
+                questionText.textContent = 'Quiz Over! Thanks for playing.';
+                document.getElementById('host-answers-container').style.display = 'none';
             }
         };
 
-        const startButton = document.getElementById('start-quiz-btn');
         startButton.addEventListener('click', () => {
-            socket.send(JSON.stringify({
-                'type': 'start_quiz'
-            }));
-            startButton.disabled = true;
-            startButton.textContent = 'Quiz in progress...';
+            socket.send(JSON.stringify({'type': 'start_quiz'}));
+            startButton.style.display = 'none';
         });
     </script>
 {% endblock %}

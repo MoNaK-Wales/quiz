@@ -1,16 +1,18 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
+import asyncio
 from .models import QuizSession, Question
 from channels.db import database_sync_to_async
 
 
 active_players = {}  # {room_code: [player1, player2, ...]}
+session_answers = {}
 
 class QuizConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_code = self.scope["url_route"]["kwargs"][
-            "room_code"
-        ]  # Получение room_code из URL
+            "room_code"  # Получение room_code из URL
+        ]
         self.room_group_name = (
             f"quiz_{self.room_code}"  # Название отдельной группы для каждого квиза
         )
@@ -23,6 +25,7 @@ class QuizConsumer(AsyncWebsocketConsumer):
 
         if self.room_group_name not in active_players:
             active_players[self.room_group_name] = []
+            session_answers[self.room_group_name] = {}
         print(
             f"[CONNECT] quiz {self.room_code} | active: {len(active_players[self.room_group_name])}"
         )
@@ -32,6 +35,8 @@ class QuizConsumer(AsyncWebsocketConsumer):
             self.room_group_name, []
         ):
             active_players[self.room_group_name].remove(self.player_name)
+            if self.player_name in session_answers.get(self.room_group_name, {}):
+                del session_answers[self.room_group_name][self.player_name]
 
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -51,15 +56,13 @@ class QuizConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):         # Получение сообщения (ответа) от пользователя
         data = json.loads(text_data)
+        session_players = active_players.get(self.room_group_name)
 
         if data.get("type") == "join":
             self.player_name = data.get("name")
 
-            if (
-                self.player_name
-                and self.player_name not in active_players[self.room_group_name]
-            ):
-                active_players[self.room_group_name].append(self.player_name)
+            if self.player_name and self.player_name not in session_players:
+                session_players.append(self.player_name)
 
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -71,13 +74,17 @@ class QuizConsumer(AsyncWebsocketConsumer):
 
         elif data.get("type") == "answer":
             # Отправка ответа всем участникам квиза
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "quiz_message",  # У всех консумеров вызывается функция quiz_message
-                    "message": data["answer"],
-                },
-            )
+            if hasattr(self, "player_name"):
+                session_answers[self.room_group_name][self.player_name] = data["answer"]
+                print(f"[ANSWER] {self.player_name} answered: {data['answer']}")
+                print(f"[ANSWERS] Current answers: {session_answers[self.room_group_name]}")
+
+            current_answers_count = len(session_answers[self.room_group_name])
+            active_players_count = len(active_players[self.room_group_name])
+            print(f"[CHECK] Answers: {current_answers_count}/{active_players_count}")
+            
+            if current_answers_count >= active_players_count and active_players_count > 0:
+                await self.process_end()
 
         elif data.get("type") == "start_quiz":
             question_data = await self.get_next_question()
@@ -92,13 +99,13 @@ class QuizConsumer(AsyncWebsocketConsumer):
                     },
                 )
 
-    async def quiz_message(self, event):        # Получение сообщения из группы квиза (функция называется как 'type' в group_send)
-        message = event['message']
+    # async def quiz_message(self, event):        # Получение сообщения из группы квиза (функция называется как 'type' в group_send)
+    #     message = event['message']
 
-        # Отправка сообщения обратно пользователю
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
+    #     # Отправка сообщения обратно пользователю
+    #     await self.send(text_data=json.dumps({
+    #         'message': message
+    #     }))
 
     async def players_update(self, event):
         await self.send(
@@ -147,3 +154,67 @@ class QuizConsumer(AsyncWebsocketConsumer):
                 return None
         except QuizSession.DoesNotExist:
             return None
+
+    @database_sync_to_async
+    def check_answer(self, player_answer, is_setup=False):
+        try:
+            session = QuizSession.objects.get(code=self.room_code)
+            question_index = session.current_question_index - 1
+
+            question = list(session.quiz.questions.all())[question_index]
+            correct_answer_obj = question.answers.get(is_correct=True)
+            correct_answer_char = correct_answer_obj.option_char
+
+            if is_setup:
+                return correct_answer_char
+
+            return player_answer == correct_answer_char
+        except Exception:
+            return None if is_setup else False
+
+    async def process_end(self):
+        correct_answer = await self.check_answer(None, is_setup=True)
+
+        current_answers = session_answers.get(self.room_group_name, {})
+        results = {}
+        for player, answer in current_answers.items():
+            results[player] = answer == correct_answer
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "round_results",
+                "results": results,
+                "correct_answer": correct_answer  # Добавляем для отображения
+            },
+        )
+
+        await asyncio.sleep(3)
+
+        # СНАЧАЛА получаем следующий вопрос, ПОТОМ очищаем ответы
+        question_data = await self.get_next_question()
+        
+        # Очищаем ответы только после получения следующего вопроса
+        session_answers[self.room_group_name] = {}
+
+        if question_data:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "new_question",
+                    "question": question_data["text"],
+                    "answers": question_data["answers"],
+                },
+            )
+        else:
+            # если вопросов больше нет
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "quiz_end", "message": "The quiz has finished!"},
+            )
+
+    async def round_results(self, event):
+        await self.send(text_data=json.dumps(event))
+
+    async def quiz_end(self, event):
+        await self.send(text_data=json.dumps(event))

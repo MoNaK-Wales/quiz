@@ -2,16 +2,24 @@
 {% block title %}{{ quiz.title }}{% endblock %}
 
 {% block content %}
-    <h2>Welcome, {{ player_name }}!</h2>
-    <div id="quiz-container">
-        <h3 id="question-text">Waiting for the host to start the game...</h3>
-    </div>
+    <style>
+        .answer-btn {
+            width: 45%;
+            height: 150px;
+            font-size: 3rem;
+            margin: 5px;
+        }
+    </style>
+
+    <h2 id="welcome-text">Welcome, {{ player_name }}!</h2>
+    <h3 id="status-text">Waiting for the host to start the game...</h3>
 
     <div id="answers-container" style="display: none;">
-        <button id="btn-a" onclick="sendAnswer('A')">A</button>
-        <button id="btn-b" onclick="sendAnswer('B')">B</button>
-        <button id="btn-c" onclick="sendAnswer('C')">C</button>
-        <button id="btn-d" onclick="sendAnswer('D')">D</button>
+        <button id="btn-a" onclick="sendAnswer('A')" class="answer-btn" style="background-color: red;"></button>
+        <button id="btn-b" onclick="sendAnswer('B')" class="answer-btn" style="background-color: blue;"></button>
+        <br>
+        <button id="btn-c" onclick="sendAnswer('C')" class="answer-btn" style="background-color: orange;"></button>
+        <button id="btn-d" onclick="sendAnswer('D')" class="answer-btn" style="background-color: green;"></button>
     </div>
 
     <script>
@@ -19,35 +27,49 @@
         const playerName = "{{ player_name }}";
         const socket = new WebSocket(`ws://${window.location.host}/ws/quiz/${roomCode}/`);
 
-        const questionText = document.getElementById('question-text');
-        const btnA = document.getElementById('btn-a');
-        const btnB = document.getElementById('btn-b');
-        const btnC = document.getElementById('btn-c');
-        const btnD = document.getElementById('btn-d');
+        const welcomeText = document.getElementById('welcome-text');
+        const statusText = document.getElementById('status-text');
+        const answersContainer = document.getElementById('answers-container');
+        const answerButtons = answersContainer.getElementsByClassName('answer-btn');
 
         socket.onopen = () => {
-            console.log("✅ Connected to game room!");
+            console.log("✅ Player connected!");
             socket.send(JSON.stringify({'type': 'join', 'name': playerName}));
         };
 
         socket.onmessage = (e) => {
             const data = JSON.parse(e.data);
-            console.log("Message from server:", data);
+            console.log("Player received:", data);
 
             if (data.type === 'new_question') {
-                questionText.textContent = data.question;
-                btnA.textContent = data.answers.A;
-                btnB.textContent = data.answers.B;
-                btnC.textContent = data.answers.C;
-                btnD.textContent = data.answers.D;
+                document.body.style.backgroundColor = 'white';
+                welcomeText.style.display = 'none';
+                statusText.textContent = 'Choose your answer now!';
+                answersContainer.style.display = 'block';
 
-                document.getElementById('answers-container').style.display = 'block';
+                for (let btn of answerButtons) {
+                    btn.disabled = false;
+                }
+            } 
+            else if (data.type === 'round_results') {
+                const myResult = data.results[playerName];
+                if (myResult === true) {
+                    statusText.textContent = 'Correct!';
+                    document.body.style.backgroundColor = 'lightgreen';
+                } else {
+                    statusText.textContent = 'Incorrect!';
+                    document.body.style.backgroundColor = 'lightcoral';
+                }
             }
         };
 
         function sendAnswer(answer) {
             console.log(`Sending answer: ${answer}`);
             socket.send(JSON.stringify({'type': 'answer', 'answer': answer}));
+
+            answersContainer.style.display = 'none'; 
+
+            statusText.textContent = 'Answer sent! Waiting for the next question...';
         }
     </script>
 {% endblock %}
