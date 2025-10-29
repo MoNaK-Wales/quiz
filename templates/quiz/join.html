@@ -1,11 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Join quiz{% endblock %}
+{% block title %}Join Quiz{% endblock %}
 
 {% block content %}
-    <form method="post">
-        {% csrf_token %}
-        <input type="text" name="code" placeholder="Write host's PIN">
-        <input type="text" name="name" placeholder="Your name">
-        <button type="submit">Enter</button>
-    </form>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow" style="background: rgba(255, 255, 255, 0.95); border-radius: 15px;">
+                <div class="card-header text-center" style="background: linear-gradient(45deg, #007bff, #0056b3); border-radius: 15px 15px 0 0;">
+                    <h4 class="mb-0 text-white">Join Quiz</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Host's PIN</label>
+                            <input type="text" name="code" class="form-control" placeholder="Enter PIN" required style="border-radius: 10px;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Your Name</label>
+                            <input type="text" name="name" class="form-control" placeholder="Enter your name" required style="border-radius: 10px;">
+                        </div>
+                        <button type="submit" class="btn w-100" style="background: linear-gradient(45deg, #007bff, #0056b3); color: white; border-radius: 10px;">Join Quiz</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
