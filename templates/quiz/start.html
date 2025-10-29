@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load env_tags %}
 {% block title %}{{ quiz.title }}{% endblock %}
 
 {% block content %}
@@ -22,7 +23,8 @@
 
     <script>
         const roomCode = "{{ session.code }}";
-        const socket = new WebSocket(`ws://${window.location.host}/ws/quiz/${roomCode}/`);
+        const host = "{% get_env_var 'SERVER_HOST_PC' %}";
+        const socket = new WebSocket(`ws://${host}/ws/quiz/${roomCode}/`);
 
         const lobbyContainer = document.getElementById('lobby-container');
         const questionContainer = document.getElementById('question-container');

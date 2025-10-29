@@ -24,11 +24,12 @@ load_dotenv(BASE_DIR / ".env")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
+SERVER_HOST_PC = os.getenv("SERVER_HOST_PC")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
