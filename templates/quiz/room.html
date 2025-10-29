@@ -64,6 +64,13 @@
                     document.body.style.backgroundColor = 'lightcoral';
                 }
             }
+            else if (data.type === 'quiz_end') {
+                setTimeout(() => {
+                    document.body.style.backgroundColor = 'white';
+                    statusText.textContent = 'The quiz has ended. Thank you for playing!';
+                    answersContainer.style.display = 'none';
+                }, 3000);
+            }
         };
 
         function sendAnswer(answer) {

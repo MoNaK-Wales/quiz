@@ -200,11 +200,13 @@ class QuizConsumer(AsyncWebsocketConsumer):
                 },
             )
 
-            await asyncio.sleep(3)
+            question_data = await self.get_next_question()
+
+            if question_data:
+                await asyncio.sleep(3)
             
             room_processing[self.room_group_name] = False
 
-            question_data = await self.get_next_question()
             session_answers[self.room_group_name] = {}
 
             if question_data:
