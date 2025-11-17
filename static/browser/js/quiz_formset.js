@@ -31,8 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     formsetContainer.addEventListener('click', function (event) {
-        if (event.target.classList.contains('delete-form-button')) {
-            const formSetBlock = event.target.closest('.formset-block');
+        const deleteButton = event.target.closest('.delete-form-btn');
+        if (deleteButton) {
+            const formSetBlock = deleteButton.closest('.formset-block') || deleteButton.closest('.question-set');
             formSetBlock.style.display = 'none';
             const deleteCheckbox = formSetBlock.querySelector('input[type="checkbox"][name*="questions-"][name$="-DELETE"]');
             if (deleteCheckbox) {

@@ -61,7 +61,7 @@ class QuizFormView(LoginRequiredMixin, FormView):
                 continue
 
             question = question_form.save(commit=False)
-            question_form.quiz = quiz
+            question.quiz = quiz
             question.save()
 
             answers = a_form.cleaned_data

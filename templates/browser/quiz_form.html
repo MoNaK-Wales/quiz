@@ -10,15 +10,15 @@
     <div class="container">
         <h2>Create New Quiz</h2>
 
-        <form>
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
-            {% if quiz_form.errors or question_form.errors or answer_form.errors %}
+            {% if quiz_form.errors or question_formset.non_form_errors or answer_formset.non_form_errors or question_formset.errors or answer_formset.errors %}
                 <div class="alert alert-danger">
                     <strong>Please correct the errors below:</strong>
                     {{ quiz_form.non_field_errors }}
-                    {{ question_form.non_field_errors }}
-                    {{ answer_form.non_field_errors }}
+                    {{ question_formset.non_form_errors }}
+                    {{ answer_formset.non_form_errors }}
                 </div>
             {% endif %}
 
@@ -37,8 +37,8 @@
                 </div>
                 <div class="card-body">
                     <div id="formset-container">
-                        {{ question_form.management_form }}
-                        {{ answer_form.management_form }}
+                        {{ question_formset.management_form }}
+                        {{ answer_formset.management_form }}
 
                         {% for q_form, a_forms in form_pairs %}
                             <div class="question-set card mb-3">
@@ -49,15 +49,37 @@
                                     {% endif %}
                                 </div>
                                 <div class="card-body">
-                                    <div style="display: none;">
-                                        {{ q_form.DELETE }}
+                                    <div style="display: none;">{{ q_form.DELETE }}</div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ q_form.text.id_for_label }}" class="form-label">Text</label>
+                                        {{ q_form.text }}
+                                    </div>
+                                    <div class="col-md-1 mb-3">
+                                        <label for="{{ q_form.time_limit.id_for_label }}" class="form-label">Time limit</label>
+                                        {{ q_form.time_limit }}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ q_form.media.id_for_label }}" class="form-label">Media</label>
+                                        {{ q_form.media }}
                                     </div>
 
-                                    {{ q_form.as_p }}
                                     <hr>
+                                    <h5 class="mb-3">Answers</h5>
+                                    
+                                    <div class="answer-grid-layout">
+                                        {{ a_forms.correct_option.0.tag }}
+                                        <div class="answer-field">{{ a_forms.A }}</div>
+                                    
+                                        {{ a_forms.correct_option.1.tag }}
+                                        <div class="answer-field">{{ a_forms.B }}</div>
+                                    
+                                        {{ a_forms.correct_option.2.tag }}
+                                        <div class="answer-field">{{ a_forms.C }}</div>
 
-                                    <h5>Answers</h5>
-                                    {{ a_forms.as_p }}
+                                        {{ a_forms.correct_option.3.tag }}
+                                        <div class="answer-field">{{ a_forms.D }}</div>
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}
@@ -70,23 +92,43 @@
 
     <div id="empty-form-template" style="display: none;">
         <div class="question-set card mb-3" style="opacity: 0.5;">
-            <div class="card-header d-flex justify-content-between">
-                <span>Question <span class="question-counter">__prefix__</span></span>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Question <span class="question-counter">{{ question_formset.empty_form.prefix|add:1 }}</span></span>
                 <button type="button" class="btn-close delete-form-btn" aria-label="Delete"></button>
             </div>
             <div class="card-body">
-                <div style="display: none;">
-                    {{ question_form.empty_form.DELETE }}
+                <div style="display: none;">{{ question_formset.empty_form.DELETE }}</div>
+
+                <div class="mb-3">
+                    <label for="id_questions-__prefix__-text" class="form-label">Text</label>
+                    {{ question_formset.empty_form.text }}
                 </div>
-
-                {{ question_form.empty_form.as_p }}
+                <div class="col-md-1 mb-3"> <label for="id_questions-__prefix__-time_limit" class="form-label">Time limit</label>
+                    {{ question_formset.empty_form.time_limit }}
+                </div>
+                <div class="col-md-6 mb-3"> <label for="id_questions-__prefix__-media" class="form-label">Media</label>
+                    {{ question_formset.empty_form.media }}
+                </div>
                 <hr>
+                <h5 class="mb-3">Answers</h5>
 
-                <h5>Answers</h5>
-                {{ answer_formset.empty_form.as_p }}
+                <div class="answer-grid-layout">
+                    {{ answer_formset.empty_form.correct_option.0.tag }}
+                    <div class="answer-field">{{ answer_formset.empty_form.A }}</div>
+
+                    {{ answer_formset.empty_form.correct_option.1.tag }}
+                    <div class="answer-field">{{ answer_formset.empty_form.B }}</div>
+
+                    {{ answer_formset.empty_form.correct_option.2.tag }}
+                    <div class="answer-field">{{ answer_formset.empty_form.C }}</div>
+
+                    {{ answer_formset.empty_form.correct_option.3.tag }}
+                    <div class="answer-field">{{ answer_formset.empty_form.D }}</div>
+                </div>
             </div>
         </div>
     </div>
+</div>
 {% endblock content %}
 
 {% block scripts %}
