@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Create Quiz{% endblock title %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'browser/css/quiz_form.css' %}">
+{% endblock styles %}
+
+{% block content %}
+    <div class="container">
+        <h2>Create New Quiz</h2>
+
+        <form>
+            {% csrf_token %}
+
+            {% if quiz_form.errors or question_form.errors or answer_form.errors %}
+                <div class="alert alert-danger">
+                    <strong>Please correct the errors below:</strong>
+                    {{ quiz_form.non_field_errors }}
+                    {{ question_form.non_field_errors }}
+                    {{ answer_form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h4>Quiz Details</h4>
+                </div>
+                <div class="card-body">
+                    {{ quiz_form.as_p }}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h4>Question Details</h4>
+                </div>
+                <div class="card-body">
+                    <div id="formset-container">
+                        {{ question_form.management_form }}
+                        {{ answer_form.management_form }}
+
+                        {% for q_form, a_forms in form_pairs %}
+                            <div class="question-set card mb-3">
+                                <div class="card-header d-flex justify-content-between">
+                                    <span>Question {{ forloop.counter }}</span>
+                                    {% if not forloop.first %}
+                                        <button type="button" class="btn-close delete-form-btn" aria-label="Delete"></button>
+                                    {% endif %}
+                                </div>
+                                <div class="card-body">
+                                    <div style="display: none;">
+                                        {{ q_form.DELETE }}
+                                    </div>
+
+                                    {{ q_form.as_p }}
+                                    <hr>
+
+                                    <h5>Answers</h5>
+                                    {{ a_forms.as_p }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success mt-3">Create Quiz</button>
+        </form>
+    </div>
+
+    <div id="empty-form-template" style="display: none;">
+        <div class="question-set card mb-3" style="opacity: 0.5;">
+            <div class="card-header d-flex justify-content-between">
+                <span>Question <span class="question-counter">__prefix__</span></span>
+                <button type="button" class="btn-close delete-form-btn" aria-label="Delete"></button>
+            </div>
+            <div class="card-body">
+                <div style="display: none;">
+                    {{ question_form.empty_form.DELETE }}
+                </div>
+
+                {{ question_form.empty_form.as_p }}
+                <hr>
+
+                <h5>Answers</h5>
+                {{ answer_formset.empty_form.as_p }}
+            </div>
+        </div>
+    </div>
+{% endblock content %}
+
+{% block scripts %}
+    <script src="{% static 'browser/js/quiz_formset.js' %}"></script>
+{% endblock scripts %}

@@ -6,6 +6,7 @@ import string
 class Quiz(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
+    cover = models.ImageField(upload_to='quiz_covers/', null=True, blank=True)
     creator = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, related_name='quizzes')
     created_at = models.DateTimeField(auto_now_add=True)
     is_public = models.BooleanField(default=True)
