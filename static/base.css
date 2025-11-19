@@ -1,0 +1,95 @@
+/* Корпоративные переменные */
+:root {
+    --primary-purple: #6E44FF;
+    --accent-lime: #C2F970;
+    --white: #FFFFFF;
+    --dark-gray: #2D2A3D;
+    --light-gray: #F1F0F5;
+    --soft-red: #FF6B6B;
+    
+    --font-inter: 'Inter', Arial, sans-serif;
+    --border-radius: 12px;
+    --card-radius: 16px;
+}
+body {
+    font-family: var(--font-inter);
+    color: var(--dark-gray);
+    background-color: var(--light-gray);
+    line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+    font-weight: 600;
+}
+
+h1 { font-size: 28px; }
+h2 { font-size: 24px; }
+h3 { font-size: 20px; }
+p, .btn { font-size: 16px; }
+small { font-size: 14px; }
+
+.btn-primary {
+    background-color: var(--primary-purple);
+    border-color: var(--primary-purple);
+    border-radius: var(--border-radius);
+    color: var(--white);
+    font-weight: 500;
+    padding: 10px 24px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #5a36d6;
+    border-color: #5a36d6;
+    transform: translateY(-2px);
+}
+
+.btn-accent {
+    background-color: var(--accent-lime);
+    border-color: var(--accent-lime);
+    border-radius: var(--border-radius);
+    color: var(--dark-gray);
+    font-weight: 600;
+    padding: 10px 24px;
+    transition: all 0.3s ease;
+}
+
+.btn-accent:hover {
+    background-color: #b0e65a;
+    border-color: #b0e65a;
+    transform: translateY(-2px);
+}
+
+.card {
+    border: none;
+    border-radius: var(--card-radius);
+    box-shadow: 0 4px 12px rgba(110, 68, 255, 0.1);
+    background-color: var(--white);
+}
+
+.card-header {
+    background-color: var(--white);
+    border-bottom: 1px solid var(--light-gray);
+    font-weight: 600;
+    padding: 16px 20px;
+}
+
+.form-control {
+    border: 2px solid var(--light-gray);
+    border-radius: var(--border-radius);
+    padding: 10px 16px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 0 0.2rem rgba(110, 68, 255, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--dark-gray);
+    margin-bottom: 8px;
+}

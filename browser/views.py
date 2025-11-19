@@ -9,7 +9,23 @@ from typing import cast
 
 # Create your views here.
 def main_page(request):
-    return render(request, 'browser/main.html')
+    quizzes = Quiz.objects.all().select_related('creator').prefetch_related('questions')
+    
+    for quiz in quizzes:
+        quiz.question_count = quiz.questions.count()
+        # quiz.difficulty_color = {
+        #     'easy': 'beginner',
+        #     'medium': 'intermediate', 
+        #     'hard': 'advanced'
+        # }.get(quiz.difficulty, 'beginner')
+    
+    context = {
+        'quizzes': quizzes,
+        'total_quizzes': Quiz.objects.count(),
+        'total_questions': Question.objects.count(),
+        'total_completed': 0,
+    }
+    return render(request, 'browser/main.html', context)
 
 @login_required
 def profile(request):
@@ -29,9 +45,9 @@ class QuizFormView(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        context['quiz_form'] = context.get('quiz_form', self.form_class())
-        context['question_formset'] = self.QuestionFormSet(prefix='questions')
-        context['answer_formset'] = self.AnswerFormSet(prefix='answers')
+        context['quiz_form'] = kwargs.get('quiz_form', context.get('form'))
+        context['question_formset'] = kwargs.get('question_formset', self.QuestionFormSet(prefix='questions'))
+        context['answer_formset'] = kwargs.get('answer_formset', self.AnswerFormSet(prefix='answers'))
         context['form_pairs'] = zip(context['question_formset'], context['answer_formset'])
         return context
 
@@ -39,6 +55,7 @@ class QuizFormView(LoginRequiredMixin, FormView):
         quiz_form = QuizForm(request.POST, request.FILES)
         question_formset = self.QuestionFormSet(request.POST, request.FILES, prefix='questions')
         answer_formset = self.AnswerFormSet(request.POST, prefix='answers')
+        print("Question formsets is_valid:", question_formset.is_valid())
 
         if all([quiz_form.is_valid(), question_formset.is_valid(), answer_formset.is_valid()]):
             return self.form_valid(quiz_form, question_formset, answer_formset)
@@ -53,15 +70,20 @@ class QuizFormView(LoginRequiredMixin, FormView):
         for question_form, answer_form in zip(question_formset, answer_formset):
             q_form = cast(QuestionForm, question_form)
             a_form = cast(AnswerForm, answer_form)
-
-            if not q_form.cleaned_data:
-                continue
             
             if q_form.cleaned_data.get('DELETE'):
                 continue
 
-            question = question_form.save(commit=False)
-            question.quiz = quiz
+            question_data = q_form.cleaned_data
+            question = Question(
+                quiz=quiz,
+                text=question_data.get('text'),
+                time_limit=question_data.get('time_limit'),
+            )
+            if 'image' in question_data and question_data['image']:
+                question.image = question_data['image']
+            elif 'video' in question_data and question_data['video']:
+                question.video = question_data['video']
             question.save()
 
             answers = a_form.cleaned_data
@@ -78,8 +100,9 @@ class QuizFormView(LoginRequiredMixin, FormView):
         return redirect(self.success_url)
     
     def form_invalid(self, quiz_form, question_formset, answer_formset):
-        context = self.get_context_data()
-        context['quiz_form'] = quiz_form
-        context['question_formset'] = question_formset
-        context['answer_formset'] = answer_formset
-        return render(self.request, self.template_name, context)
+        context = self.get_context_data(
+            quiz_form=quiz_form,
+            question_formset=question_formset,
+            answer_formset=answer_formset
+        )
+        return self.render_to_response(context)
