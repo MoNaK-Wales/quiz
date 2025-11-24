@@ -1,0 +1,43 @@
+.quiz-card {
+    transition: all 0.3s ease;
+    border: none !important;
+    border-radius: 15px !important;
+    overflow: hidden;
+}
+
+.quiz-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15) !important;
+}
+
+.quiz-cover-placeholder {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(45deg, #667eea, #764ba2) !important;
+}
+
+.bg-beginner { 
+    background: linear-gradient(45deg, #28a745, #20c997) !important; 
+}
+.bg-intermediate { 
+    background: linear-gradient(45deg, #ffc107, #fd7e14) !important; 
+    color: #000 !important; 
+}
+.bg-advanced { 
+    background: linear-gradient(45deg, #dc3545, #e83e8c) !important; 
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.quiz-cover {
+    transition: transform 0.3s ease;
+}
+
+.quiz-card:hover .quiz-cover {
+    transform: scale(1.05);
+}

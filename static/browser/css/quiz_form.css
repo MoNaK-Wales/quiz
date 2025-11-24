@@ -1,0 +1,99 @@
+/* Quiz Form Styles */
+.question-set[style*="opacity: 0.5"] {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.answer-grid-layout {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    background-color: var(--light-gray);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    margin: 15px 0;
+}
+
+.card {
+    border: 2px solid var(--light-gray);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--primary-purple), #8B6CFF);
+    color: var(--white);
+    font-weight: 600;
+}
+
+.form-control {
+    border: 2px solid var(--light-gray);
+    border-radius: var(--border-radius);
+}
+
+.form-control:focus {
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 0 0.2rem rgba(110, 68, 255, 0.25);
+}
+
+.btn-success {
+    background-color: var(--accent-lime);
+    border-color: var(--accent-lime);
+    color: var(--dark-gray);
+    font-weight: 600;
+    border-radius: var(--border-radius);
+    padding: 12px 30px;
+}
+
+.btn-success:hover {
+    background-color: #b0e65a;
+    border-color: #b0e65a;
+    color: var(--dark-gray);
+}
+
+/* Error Styling */
+.alert-danger {
+    background-color: var(--soft-red);
+    border-color: var(--soft-red);
+    color: var(--white);
+    border-radius: var(--border-radius);
+}
+
+.text-danger {
+    color: var(--soft-red) !important;
+    font-weight: 500;
+}
+
+input.is-invalid, 
+textarea.is-invalid, 
+select.is-invalid {
+    border-color: var(--soft-red) !important;
+}
+
+.errorlist {
+    color: var(--soft-red);
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    font-weight: 500;
+}
+
+.answer-field {
+    position: relative;
+}
+
+.answer-grid-layout {
+    position: relative;
+    min-height: 60px;
+}
+
+/* Custom Radio Buttons */
+input[type="radio"].form-check-input {
+    width: 1.2em;
+    height: 1.2em;
+    margin-top: 0.2em;
+}
+
+input[type="radio"].form-check-input:checked {
+    background-color: var(--primary-purple);
+    border-color: var(--primary-purple);
+}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load env_tags %}
+{% block title %}{{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card shadow mb-4" style="background: rgba(255, 255, 255, 0.95); border-radius: 15px;">
+        <div class="card-body text-center">
+            <h2 id="welcome-text" class="mb-3">Welcome, {{ player_name }}!</h2>
+            <h3 id="status-text" class="mb-4">Waiting for the host to start the game...</h3>
+        </div>
+    </div>
+
+    <div id="answers-container" class="text-center" style="display: none;">
+        <div class="row justify-content-center">
+            <div class="col-5 mb-3">
+                <button id="btn-a" onclick="sendAnswer('A')" class="btn btn-danger w-100 p-4 fs-2 fw-bold" style="border-radius: 15px; height: 120px;">A</button>
+            </div>
+            <div class="col-5 mb-3">
+                <button id="btn-b" onclick="sendAnswer('B')" class="btn btn-primary w-100 p-4 fs-2 fw-bold" style="border-radius: 15px; height: 120px;">B</button>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-5">
+                <button id="btn-c" onclick="sendAnswer('C')" class="btn btn-warning w-100 p-4 fs-2 fw-bold" style="border-radius: 15px; height: 120px;">C</button>
+            </div>
+            <div class="col-5">
+                <button id="btn-d" onclick="sendAnswer('D')" class="btn btn-success w-100 p-4 fs-2 fw-bold" style="border-radius: 15px; height: 120px;">D</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Твой JavaScript код остается без изменений
+    const roomCode = "{{ session.code }}";
+    const playerName = "{{ player_name }}";
+    const host = "{% get_env_var 'SERVER_HOST_PC' %}";
+    const socket = new WebSocket(`ws://${host}/ws/quiz/${roomCode}/`);
+
+    const welcomeText = document.getElementById('welcome-text');
+    const statusText = document.getElementById('status-text');
+    const answersContainer = document.getElementById('answers-container');
+
+    socket.onopen = () => {
+        console.log("✅ Player connected!");
+        socket.send(JSON.stringify({'type': 'join', 'name': playerName}));
+    };
+
+    socket.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        console.log("Player received:", data);
+
+        if (data.type === 'new_question') {
+            document.body.style.backgroundColor = 'white';
+            welcomeText.style.display = 'none';
+            statusText.textContent = 'Choose your answer now!';
+            answersContainer.style.display = 'block';
+        } 
+        else if (data.type === 'round_results') {
+            const myResult = data.results[playerName];
+            console.log("My result:", myResult);
+            if (myResult === true) {
+                statusText.textContent = 'Correct!';
+                document.body.style.backgroundColor = 'lightgreen';
+            } else {
+                statusText.textContent = 'Incorrect!';
+                document.body.style.backgroundColor = 'lightcoral';
+            }
+        }
+        else if (data.type === 'quiz_end') {
+            setTimeout(() => {
+                document.body.style.backgroundColor = 'white';
+                statusText.textContent = 'The quiz has ended. Thank you for playing!';
+                answersContainer.style.display = 'none';
+            }, 3000);
+        }
+    };
+
+    function sendAnswer(answer) {
+        console.log(`Sending answer: ${answer}`);
+        socket.send(JSON.stringify({'type': 'answer', 'answer': answer}));
+        answersContainer.style.display = 'none'; 
+        statusText.textContent = 'Answer sent! Waiting for the next question...';
+    }
+</script>
+{% endblock %}

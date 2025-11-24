@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Create Quiz{% endblock title %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h2 class="mb-0">Create New Quiz</h2>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" id="quiz-form">
+                        {% csrf_token %}
+
+                        {% if quiz_form.errors or question_formset.non_form_errors %}
+                        <div class="alert alert-danger">
+                            <strong>Please correct the errors below:</strong>
+                            {{ quiz_form.non_field_errors }}
+                            {{ question_formset.non_form_errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="card border-0 bg-light mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h4 class="mb-0">Quiz Details</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Title</label>
+                                            {{ quiz_form.title }}
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Description</label>
+                                            {{ quiz_form.description }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 bg-light">
+                            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0">Questions</h4>
+                            </div>
+                            <div class="card-body">
+                                <div id="management-forms">
+                                    {{ question_formset.management_form }}
+                                    {{ answer_formset.management_form }}
+                                </div>
+
+                                <div id="formset-container">
+                                    {% for q_form, a_forms in form_pairs %}
+                                    <div class="question-set card mb-4 border">
+                                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">Question <span class="question-number">{{ forloop.counter }}</span></h5>
+                                            {% if not forloop.first %}
+                                            <button type="button" class="btn-close btn-close-white delete-form-btn"></button>
+                                            {% endif %}
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-none">{{ q_form.DELETE }}</div>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-8 mb-3">
+                                                    <label class="form-label fw-bold">Question Text</label>
+                                                    {{ q_form.text }}
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label fw-bold">Time Limit (seconds)</label>
+                                                    {{ q_form.time_limit }}
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <h5 class="fw-bold mb-3">Answers</h5>
+                                            <div class="row g-3">
+                                                <div class="col-md-6"><div class="input-group"><div class="input-group-text">{{ a_forms.correct_option.0.tag }}</div><label class="input-group-text bg-primary text-white">A</label>{{ a_forms.A }}</div></div>
+                                                <div class="col-md-6"><div class="input-group"><div class="input-group-text">{{ a_forms.correct_option.1.tag }}</div><label class="input-group-text bg-primary text-white">B</label>{{ a_forms.B }}</div></div>
+                                                <div class="col-md-6"><div class="input-group"><div class="input-group-text">{{ a_forms.correct_option.2.tag }}</div><label class="input-group-text bg-primary text-white">C</label>{{ a_forms.C }}</div></div>
+                                                <div class="col-md-6"><div class="input-group"><div class="input-group-text">{{ a_forms.correct_option.3.tag }}</div><label class="input-group-text bg-primary text-white">D</label>{{ a_forms.D }}</div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="text-center mt-3 mb-3">
+                                    <button type="button" id="add-question-btn" class="btn btn-outline-primary btn-lg">
+                                        + Add New Question
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success btn-lg px-5">Create Quiz</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="empty-form-template" style="display: none;">
+    <div class="question-set card mb-4 border">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Question <span class="question-number">__num__</span></h5>
+            <button type="button" class="btn-close btn-close-white delete-form-btn"></button>
+        </div>
+        <div class="card-body">
+            <div class="d-none">{{ question_formset.empty_form.DELETE }}</div>
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label class="form-label fw-bold">Question Text</label>
+                    {{ question_formset.empty_form.text }}
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Time Limit</label>
+                    {{ question_formset.empty_form.time_limit }}
+                </div>
+            </div>
+            <hr>
+            <h5 class="fw-bold mb-3">Answers</h5>
+            <div class="row g-3">
+                <div class="col-md-6"><div class="input-group"><div class="input-group-text">{{ answer_formset.empty_form.correct_option.0.tag }}</div><label class="input-group-text bg-primary text-white">A</label>{{ answer_formset.empty_form.A }}</div></div>
+                <div class="col-md-6"><div class="input-group"><div class="input-group-text">{{ answer_formset.empty_form.correct_option.1.tag }}</div><label class="input-group-text bg-primary text-white">B</label>{{ answer_formset.empty_form.B }}</div></div>
+                <div class="col-md-6"><div class="input-group"><div class="input-group-text">{{ answer_formset.empty_form.correct_option.2.tag }}</div><label class="input-group-text bg-primary text-white">C</label>{{ answer_formset.empty_form.C }}</div></div>
+                <div class="col-md-6"><div class="input-group"><div class="input-group-text">{{ answer_formset.empty_form.correct_option.3.tag }}</div><label class="input-group-text bg-primary text-white">D</label>{{ answer_formset.empty_form.D }}</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script src="{% static 'browser/js/quiz_formset.js' %}"></script>
+{% endblock scripts %}
